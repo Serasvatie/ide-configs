@@ -1,0 +1,29 @@
+#!/bin/bash
+
+# Alias Perso
+alias ne='emacs -nw'
+#alias blih='blih.py'
+alias j='jobs'
+alias gcc='LC_ALL=C gcc'
+alias cc='LC_ALL=C cc'
+alias g++='LC_ALL=C g++'
+alias gg='g++ -W -Wall -Wextra -Werror'
+alias ggg='gg -g'
+alias pg='ping google.com'
+alias ocaml='rlwrap ocaml'
+alias git='LC_ALL=en git'
+alias make='LC_ALL=en make'
+
+# env
+PS1="{\#}\n>"
+
+# commande
+#eval `ssh-agent`
+#ssh-add ~/.ssh/id_rsa_blih
+#echo -ne "\033[00;31m"; echo -e "NE PAS OUBLIER DE METTRE LES PUTINS DE DROITS ACL A LA MOULINETTE" ; echo -ne "\033[0m"
+
+# env
+#PATH=$PATH:/home/favre_q/bin
+MAN_POSIXLY_CORRECT=1
+USER_NICKNAME="Favre Quentin"
+GIT_PROMPT_ONLY_IN_REPO=1
