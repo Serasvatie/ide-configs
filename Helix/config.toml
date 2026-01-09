@@ -35,10 +35,10 @@ S-left = "extend_char_left"
 # Do not work on Windows (file command not found, when closing chaos behavior both on Helix and PowerShell)
 # [keys.normal.space]
 # e = [
-#       ":sh rm -f C:/Users/qfavre/AppData/Local/Temp/unique-file-h21a434",
+#       ":sh rm -f C:/Users/<username>/AppData/Local/Temp/unique-file-h21a434",
 #       ":insert-output yazi '%{buffer_name}' --chooser-file=C:/Users/qfavre/AppData/Local/Temp/unique-file-h21a434",
 #       # ":insert-output echo \"x1b[?1049h\"",
-#       ":open %sh{cat C:/Users/qfavre/AppData/Local/Temp/unique-file-h21a434}",
+#       ":open %sh{cat C:/Users/<username>/AppData/Local/Temp/unique-file-h21a434}",
 #       ":redraw",
 #     ]
 
