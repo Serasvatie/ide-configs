@@ -3,6 +3,9 @@
 		"EnableEditorConfigSupport": true,
 		"OrganizeImports": true
 	},
+	"sdk": {
+		"version": "9.0.301"
+	},
 	"RoslynExtensionsOptions": {
 		"documentAnalysisTimeoutMs": 30000,
 		"enableDecompilationSupport": true,
