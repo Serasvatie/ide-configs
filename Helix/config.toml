@@ -1,0 +1,51 @@
+theme = "sonokai"
+
+[keys.normal]
+C-g = [
+    ":write-all",
+    ":insert-output lazygit",
+    ":redraw",
+    ":reload-all"
+]
+C-right = "move_next_word_start"
+C-left = "move_prev_word_end"
+C-S-right = "extend_next_word_end"
+C-S-left = "extend_prev_word_start"
+C-S-up = "extend_line_up"
+C-S-down = "extend_line_down"
+S-right = "extend_char_right"
+S-left = "extend_char_left"
+
+[keys.insert]
+C-right = "move_next_word_start"
+C-left = "move_prev_word_end"
+# S-right = "extend_char_right"
+# C-S-right = "extend_next_word_end"
+# C-S-left = "extend_prev_word_start"
+# S-left = "extend_char_left"
+
+[keys.select]
+C-right = "extend_next_word_start"
+C-left = "extend_prev_word_end"
+C-S-right = "extend_next_word_end"
+C-S-left = "extend_prev_word_start"
+S-right = "extend_char_right"
+S-left = "extend_char_left"
+
+# Do not work on Windows (file command not found, when closing chaos behavior both on Helix and PowerShell)
+# [keys.normal.space]
+# e = [
+#       ":sh rm -f C:/Users/qfavre/AppData/Local/Temp/unique-file-h21a434",
+#       ":insert-output yazi '%{buffer_name}' --chooser-file=C:/Users/qfavre/AppData/Local/Temp/unique-file-h21a434",
+#       # ":insert-output echo \"x1b[?1049h\"",
+#       ":open %sh{cat C:/Users/qfavre/AppData/Local/Temp/unique-file-h21a434}",
+#       ":redraw",
+#     ]
+
+[editor.whitespace.render]
+space = "all"
+tab = "all"
+
+[editor.whitespace.characters]
+space = "·"
+tab = "→"

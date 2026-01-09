@@ -1,0 +1,13 @@
+[language-server]
+omnisharp={"command"="omnisharp", "args"=["-lsp"] , timeout=200000}
+
+[[language]]
+name = "c-sharp"
+scope = "source.csharp"
+injection-regex = "c-?sharp"
+file-types = ["cs", "csx", "cake"]
+roots = ["sln", "slnx", "csproj"]
+block-comment-tokens = { start = "/*", end = "*/" }
+language-servers = [ "omnisharp" ]
+formatter = { command = "csharpier" }
+auto-format = true
