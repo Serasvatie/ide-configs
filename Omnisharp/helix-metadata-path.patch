@@ -1,0 +1,270 @@
+diff --git a/src/OmniSharp.LanguageServerProtocol/Helpers.cs b/src/OmniSharp.LanguageServerProtocol/Helpers.cs
+--- a/src/OmniSharp.LanguageServerProtocol/Helpers.cs
++++ b/src/OmniSharp.LanguageServerProtocol/Helpers.cs
+@@ -11,6 +11,7 @@
+ using OmniSharp.LanguageServerProtocol.Handlers;
+ using OmniSharp.Models;
+ using OmniSharp.Models.Diagnostics;
++using OmniSharp.Utilities;
+ using Range = OmniSharp.Extensions.LanguageServer.Protocol.Models.Range;
+ 
+ namespace OmniSharp.LanguageServerProtocol
+@@ -95,8 +96,26 @@
+             return DiagnosticSeverity.Information;
+         }
+ 
+-        public static DocumentUri ToUri(string fileName) => DocumentUri.File(fileName);
+-        public static string FromUri(DocumentUri uri) => uri.GetFileSystemPath().Replace(Path.AltDirectorySeparatorChar, Path.DirectorySeparatorChar);
++        public static DocumentUri ToUri(string fileName)
++        {
++            if (MetadataPathHelpers.TryGetMetadataOnDiskPath(fileName, out var metadataPath))
++            {
++                return DocumentUri.File(metadataPath);
++            }
++
++            return DocumentUri.File(fileName);
++        }
++
++        public static string FromUri(DocumentUri uri)
++        {
++            var path = uri.GetFileSystemPath().Replace(Path.AltDirectorySeparatorChar, Path.DirectorySeparatorChar);
++            if (MetadataPathHelpers.TryGetMetadataVirtualPath(path, out var metadataPath))
++            {
++                return metadataPath;
++            }
++
++            return path;
++        }
+ 
+         public static Range ToRange((int column, int line) location)
+         {
+diff --git a/src/OmniSharp.LanguageServerProtocol/Handlers/OmniSharpDefinitionHandler.cs b/src/OmniSharp.LanguageServerProtocol/Handlers/OmniSharpDefinitionHandler.cs
+--- a/src/OmniSharp.LanguageServerProtocol/Handlers/OmniSharpDefinitionHandler.cs
++++ b/src/OmniSharp.LanguageServerProtocol/Handlers/OmniSharpDefinitionHandler.cs
+@@ -48,7 +48,7 @@
+ 
+             return new LocationOrLocationLinks(omnisharpResponse.Definitions.Select<Definition, LocationOrLocationLink>(definition => new Location()
+             {
+-                Uri = definition.Location.FileName,
++                Uri = ToUri(definition.Location.FileName),
+                 Range = ToRange(definition.Location.Range)
+             }));
+         }
+diff --git a/src/OmniSharp.LanguageServerProtocol/Handlers/OmniSharpTypeDefinitionHandler.cs b/src/OmniSharp.LanguageServerProtocol/Handlers/OmniSharpTypeDefinitionHandler.cs
+--- a/src/OmniSharp.LanguageServerProtocol/Handlers/OmniSharpTypeDefinitionHandler.cs
++++ b/src/OmniSharp.LanguageServerProtocol/Handlers/OmniSharpTypeDefinitionHandler.cs
+@@ -48,7 +48,7 @@
+ 
+             return new LocationOrLocationLinks(omnisharpResponse.Definitions.Select<TypeDefinition, LocationOrLocationLink>(definition => new Location()
+             {
+-                Uri = definition.Location.FileName,
++                Uri = ToUri(definition.Location.FileName),
+                 Range = ToRange(definition.Location.Range)
+             }));
+         }
+diff --git a/src/OmniSharp.Roslyn.CSharp/Services/MetadataExternalSourceService.cs b/src/OmniSharp.Roslyn.CSharp/Services/MetadataExternalSourceService.cs
+--- a/src/OmniSharp.Roslyn.CSharp/Services/MetadataExternalSourceService.cs
++++ b/src/OmniSharp.Roslyn.CSharp/Services/MetadataExternalSourceService.cs
+@@ -1,4 +1,5 @@
+ using System.Composition;
++using System.IO;
+ using System.Linq;
+ using System.Threading;
+ using System.Threading.Tasks;
+@@ -7,6 +8,7 @@
+ using OmniSharp.Extensions;
+ using OmniSharp.Options;
+ using OmniSharp.Roslyn.CSharp.Workers.Formatting;
++using OmniSharp.Utilities;
+ 
+ namespace OmniSharp.Roslyn
+ {
+@@ -64,8 +66,31 @@
+                 _cache.TryAdd(fileName, document);
+             }
+ 
++            await TryWriteDocumentToDiskAsync(fileName, document);
+             return (document, fileName);
+         }
+ 
++        private static async Task TryWriteDocumentToDiskAsync(string fileName, Document document)
++        {
++            if (!MetadataPathHelpers.TryGetMetadataOnDiskPath(fileName, out var onDiskPath))
++            {
++                return;
++            }
++
++            try
++            {
++                var directory = Path.GetDirectoryName(onDiskPath);
++                if (!string.IsNullOrEmpty(directory))
++                {
++                    Directory.CreateDirectory(directory);
++                }
++
++                var sourceText = await document.GetTextAsync();
++                File.WriteAllText(onDiskPath, sourceText.ToString());
++            }
++            catch
++            {
++            }
++        }
+     }
+ }
+diff --git a/src/OmniSharp.Roslyn.CSharp/Services/Decompilation/DecompilationExternalSourceService.cs b/src/OmniSharp.Roslyn.CSharp/Services/Decompilation/DecompilationExternalSourceService.cs
+--- a/src/OmniSharp.Roslyn.CSharp/Services/Decompilation/DecompilationExternalSourceService.cs
++++ b/src/OmniSharp.Roslyn.CSharp/Services/Decompilation/DecompilationExternalSourceService.cs
+@@ -2,7 +2,9 @@
+ using Microsoft.Extensions.Logging;
+ using OmniSharp.Extensions;
+ using OmniSharp.Options;
++using OmniSharp.Utilities;
+ using System;
++using System.IO;
+ using System.Composition;
+ using System.Linq;
+ using System.Threading;
+@@ -59,8 +61,31 @@
+                 _cache.TryAdd(fileName, document);
+             }
+ 
++            await TryWriteDocumentToDiskAsync(fileName, document);
+             return (document, fileName);
+         }
+ 
++        private static async Task TryWriteDocumentToDiskAsync(string fileName, Document document)
++        {
++            if (!MetadataPathHelpers.TryGetMetadataOnDiskPath(fileName, out var onDiskPath))
++            {
++                return;
++            }
++
++            try
++            {
++                var directory = Path.GetDirectoryName(onDiskPath);
++                if (!string.IsNullOrEmpty(directory))
++                {
++                    Directory.CreateDirectory(directory);
++                }
++
++                var sourceText = await document.GetTextAsync();
++                File.WriteAllText(onDiskPath, sourceText.ToString());
++            }
++            catch
++            {
++            }
++        }
+     }
+ }
+diff --git a/src/OmniSharp.Shared/Utilities/MetadataPathHelpers.cs b/src/OmniSharp.Shared/Utilities/MetadataPathHelpers.cs
+new file mode 100644
+--- /dev/null
++++ b/src/OmniSharp.Shared/Utilities/MetadataPathHelpers.cs
+@@ -0,0 +1,107 @@
++using System;
++using System.IO;
++
++namespace OmniSharp.Utilities
++{
++    public static class MetadataPathHelpers
++    {
++        private const string MetadataFileToken = "$metadata$";
++        private const string MetadataPathSegment = "metadata";
++        private static readonly string MetadataRoot = Path.Combine(Path.GetTempPath(), "omnisharp", MetadataPathSegment);
++        private static readonly string MetadataRootWithSeparator = MetadataRoot.EndsWith(Path.DirectorySeparatorChar.ToString(), StringComparison.Ordinal)
++            ? MetadataRoot
++            : MetadataRoot + Path.DirectorySeparatorChar;
++        private static readonly StringComparison PathComparison = Path.DirectorySeparatorChar == '\\'
++            ? StringComparison.OrdinalIgnoreCase
++            : StringComparison.Ordinal;
++
++        public static bool TryGetMetadataOnDiskPath(string fileName, out string onDiskPath)
++        {
++            onDiskPath = null;
++            if (string.IsNullOrWhiteSpace(fileName))
++            {
++                return false;
++            }
++
++            var normalized = NormalizePath(fileName);
++            if (!normalized.StartsWith(MetadataFileToken + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase) &&
++                !string.Equals(normalized, MetadataFileToken, StringComparison.OrdinalIgnoreCase))
++            {
++                return false;
++            }
++
++            var remainder = normalized.Length > MetadataFileToken.Length
++                ? normalized.Substring(MetadataFileToken.Length).TrimStart(Path.DirectorySeparatorChar)
++                : string.Empty;
++            var encodedRemainder = EncodePathSegments(remainder);
++
++            onDiskPath = string.IsNullOrEmpty(encodedRemainder)
++                ? MetadataRoot
++                : Path.Combine(MetadataRoot, encodedRemainder);
++
++            return true;
++        }
++
++        public static bool TryGetMetadataVirtualPath(string filePath, out string metadataPath)
++        {
++            metadataPath = null;
++            if (string.IsNullOrWhiteSpace(filePath))
++            {
++                return false;
++            }
++
++            var normalized = NormalizePath(filePath);
++            if (!normalized.StartsWith(MetadataRootWithSeparator, PathComparison) &&
++                !string.Equals(normalized, MetadataRoot, PathComparison))
++            {
++                return false;
++            }
++
++            var remainder = normalized.Length > MetadataRoot.Length
++                ? normalized.Substring(MetadataRoot.Length).TrimStart(Path.DirectorySeparatorChar)
++                : string.Empty;
++            var decodedRemainder = DecodePathSegments(remainder);
++
++            metadataPath = string.IsNullOrEmpty(decodedRemainder)
++                ? MetadataFileToken
++                : MetadataFileToken + Path.DirectorySeparatorChar + decodedRemainder;
++
++            return true;
++        }
++
++        private static string NormalizePath(string path)
++            => path.Replace(Path.AltDirectorySeparatorChar, Path.DirectorySeparatorChar);
++
++        private static string EncodePathSegments(string path)
++        {
++            if (string.IsNullOrEmpty(path))
++            {
++                return path;
++            }
++
++            var segments = path.Split(Path.DirectorySeparatorChar);
++            for (var i = 0; i < segments.Length; i++)
++            {
++                segments[i] = Uri.EscapeDataString(segments[i]);
++            }
++
++            return string.Join(Path.DirectorySeparatorChar.ToString(), segments);
++        }
++
++        private static string DecodePathSegments(string path)
++        {
++            if (string.IsNullOrEmpty(path))
++            {
++                return path;
++            }
++
++            var segments = path.Split(Path.DirectorySeparatorChar);
++            for (var i = 0; i < segments.Length; i++)
++            {
++                segments[i] = Uri.UnescapeDataString(segments[i]);
++            }
++
++            return string.Join(Path.DirectorySeparatorChar.ToString(), segments);
++        }
++    }
++}
