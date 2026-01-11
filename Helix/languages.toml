@@ -1,5 +1,5 @@
 [language-server]
-omnisharp={"command"="omnisharp", "args"=["-lsp"] , timeout=200000}
+omnisharp={"command"="omnisharp", "args"=["-lsp"] , timeout=2000000}
 
 [[language]]
 name = "c-sharp"

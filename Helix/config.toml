@@ -16,13 +16,26 @@ C-S-down = "extend_line_down"
 S-right = "extend_char_right"
 S-left = "extend_char_left"
 
+[keys.normal.C-b]
+c = ":buffer-close"
+a = ":buffer-close-all"
+o = ":buffer-close-others"
+n = ":buffer-next"
+p = ":buffer-previous"
+
+[keys.normal.space.n]
+s = [
+    ":write-all",
+    ":run-shell-command dotnet build"
+]
+r = [
+    ":write-all",
+    ":run-shell-command dotnet restore"
+]
+
 [keys.insert]
 C-right = "move_next_word_start"
 C-left = "move_prev_word_end"
-# S-right = "extend_char_right"
-# C-S-right = "extend_next_word_end"
-# C-S-left = "extend_prev_word_start"
-# S-left = "extend_char_left"
 
 [keys.select]
 C-right = "extend_next_word_start"
