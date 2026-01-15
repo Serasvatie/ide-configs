@@ -55,6 +55,57 @@ S-left = "extend_char_left"
 #       ":redraw",
 #     ]
 
+[editor]
+scrolloff = 0
+line-number = "absolute" # or relativei
+cursorline = true
+cursorcolumn = false
+continue-comments = true
+gutters = ["diagnostics", "spacer", "line-numbers", "spacer", "diff"]
+completion-timeout = 100
+preview-completion-insert = true
+completion-trigger-len = 1
+completion-replace = false
+rulers = [120]
+bufferline = "multiple" # always, never, multiple
+color-modes = true
+#text-width = 210 # disable in soft wrap settings
+popup-border = "none" # popup, menu, all, none
+indent-heuristic = "tree-sitter" # hybrid -> tree-sutter -> simple
+
+[editor.statusline]
+left = ["mode", "spinner", "file-name", "read-only-indicator", "file-modification-indicator"]
+center = []
+right = ["diagnostics", "position", "total-line-numbers", "position-percentage", "spacer", "separator", "file-type", "file-encoding", "file-line-ending", "version-control"] # register, selections, file-indent-style
+separator = "|"
+mode.normal = "N"
+mode.insert = "I"
+mode.select = "S"
+diagnostics = ["error", "warning"]
+workspace-diagnostics = ["error", "warning"]
+
+[editor.lsp]
+display-messages = true
+display-progress-messages = true
+display-inlay-hints = true
+snippets = true
+
+[editor.cursor-shape] # block, bar, underline, hidden
+normal = "block"
+insert = "bar"
+select = "underline"
+
+#[editor.file-picker]
+#[editor.auto-pairs]
+
+[editor.auto-save]
+focus-lost = true
+[editor.auto-save.after-defay]
+enable = "true"
+timeout = "300000"
+
+#[editor.search]
+
 [editor.whitespace.render]
 space = "all"
 tab = "all"
@@ -62,3 +113,21 @@ tab = "all"
 [editor.whitespace.characters]
 space = "·"
 tab = "→"
+
+# [editor.indent-guides]
+# render = true
+# character = "╎" # Some characters that work well: "▏", "┆", "┊", "⸽"
+# skip-levels = 1
+
+# [editor.gutters]
+
+[editor.soft-wrap]
+enable = true
+wrap-at-text-width = false
+max-wrap = 25
+
+[editor.inline-diagnostics]
+cursor-line = "hint"
+other-lines = "warning" # error, warning, info, hint
+max-diagnostics = 10
+
