@@ -66,8 +66,8 @@ completion-timeout = 100
 preview-completion-insert = true
 completion-trigger-len = 1
 completion-replace = false
-rulers = [120]
-bufferline = "multiple" # always, never, multiple
+rulers = []
+bufferline = "never" # always, never, multiple
 color-modes = true
 #text-width = 210 # disable in soft wrap settings
 popup-border = "none" # popup, menu, all, none
@@ -127,7 +127,7 @@ wrap-at-text-width = false
 max-wrap = 25
 
 [editor.inline-diagnostics]
-cursor-line = "hint"
+cursor-line = "warning"
 other-lines = "warning" # error, warning, info, hint
 max-diagnostics = 10
 
